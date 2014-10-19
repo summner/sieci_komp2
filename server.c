@@ -10,8 +10,7 @@
 #define PORT 1234
 #define ADDR "0.0.0.0"
 #define BACKLOG 10
-//#define HOST "127.0.0.1"
-#define RESP "Pawel Chojnacki, NieZnamSwojegoNumeruIndeksuJeszcze :)\n"
+#define RESP "Pawel Chojnacki, 70950\n"
 
 int main(){
   int fd = socket(PF_INET, SOCK_STREAM, 0);
