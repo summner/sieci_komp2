@@ -45,9 +45,10 @@ int main(int argc, char **argv){
   assert(res==0);
   
   char buf[1024];
+
+  //write(fd, "GET /\n", sizeof("GET /\n"));
   ssize_t n = read(fd, buf, sizeof(buf) );
   while (n > 0) {
-    printf("saf");
     write(1, buf, n);
     n = read(fd, buf, sizeof(buf));
   }
