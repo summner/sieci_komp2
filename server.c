@@ -10,6 +10,7 @@
 #include <sys/wait.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 
 #define PORT 1234
 #define ADDR "0.0.0.0"
@@ -28,7 +29,8 @@ void childend(int sig){
 int main(){
   char response[] = "Pawel Chojnacki, 70950\n";
 
- //signal(SIGCHLD, SIG_IGN);
+  //signal(SIGCHLD, childend);
+  signal(SIGCHLD, SIG_IGN);
 
   int fd = socket(PF_INET, SOCK_STREAM, 0);
   const struct sockaddr_in sock_desc = {
@@ -47,16 +49,28 @@ int main(){
 
   struct sockaddr_in client_addr;
 
-  signal(SIGCHLD, childend);
   while (1){
     socklen_t client_addr_size = sizeof(client_addr);
     int client_fd = accept(fd, (struct sockaddr *)&client_addr, &client_addr_size);
     printf("Conn from: %s\n", inet_ntoa(client_addr.sin_addr));
     if (fork() == 0){
     	close(fd);
-//	sleep(1);
+	char buf[100];
+        ssize_t n = read(client_fd, buf, sizeof(buf) );
+	printf("x: %d\n", n);
+	while (n > 0) {
+	  write(1, buf, n);
+	  if (strncmp(buf, "106023", 6)==0) {
+	    write(client_fd, "Hetman", sizeof("Hetman"));
+	  } else if (strncmp(buf, "70950", 5)==0) {
+	    write(client_fd, "Chojnacki", sizeof("Chojnacki"));
+	  } else {
+	    write(client_fd, "Error", sizeof("Error"));
+	  }
+	  n = read(fd, buf, sizeof(buf));
+	}
 
-	res = write(client_fd, response, sizeof(response));
+	//res = write(client_fd, response, sizeof(response));
 
     	close(client_fd);
 	//assert(res == sizeof(RESP));
