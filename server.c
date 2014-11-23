@@ -6,11 +6,23 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <signal.h>
+//#include <sys/types.h>
+#include <sys/wait.h>
 
 #define PORT 1234
 #define ADDR "0.0.0.0"
 #define BACKLOG 10
 #define RESP "Pawel Chojnacki, 70950\n"
+
+void my_sigchld_handler(int sig){
+  pid_t p;
+  int status;
+
+  while ((p=waitpid(-1, &status, WNOHANG)) != -1){
+    printf("%d died with status: %d", p, status);
+  }
+}
 
 int main(){
   int fd = socket(PF_INET, SOCK_STREAM, 0);
@@ -31,13 +43,19 @@ int main(){
   struct sockaddr_in client_addr;
   socklen_t client_addr_size = sizeof(client_addr);
 
+  signal(SIGCHLD, my_sigchld_handler);
+
   while (1){
     int client_fd = accept(fd, (struct sockaddr *)&client_addr, &client_addr_size);
-    printf("%s\n", inet_ntoa(client_addr.sin_addr));
-//    const char *buf = RESP;
-    res = write(client_fd, RESP, sizeof(RESP));
-    assert(res == sizeof(RESP));
-    close(client_fd);
+    if (fork() == 0){
+	printf("%s\n", inet_ntoa(client_addr.sin_addr));
+	res = write(client_fd, RESP, sizeof(RESP));
+	assert(res == sizeof(RESP));
+    	close(client_fd);
+	break;
+    } else {
+    	close(client_fd);
+    }
   }
 
   close(fd);
