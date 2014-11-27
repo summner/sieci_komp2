@@ -28,7 +28,7 @@ void childend(int sig){
 
 int main(){
   char response[] = "Pawel Chojnacki, 70950\n";
-  char queries[][2] = {["70950"], ["106023"]};
+  char queries[10][2] = {{"70950"}, {"106023"}};
 
   //signal(SIGCHLD, childend);
   signal(SIGCHLD, SIG_IGN);
