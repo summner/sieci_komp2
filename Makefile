@@ -1,6 +1,8 @@
 
+BINARIES=http_server client server
 %: %.c
-	gcc -g -std=c99 -Wall $< -o $@ 
-#	gcc -g -Wall $< -o $@ 
+	gcc -g -std=gnu11 -Wall $< -o $@ 
 
-all: http_server client server
+all: $(BINARIES)
+clean: 
+	rm $(BINARIES)
