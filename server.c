@@ -27,11 +27,8 @@ void childend(int sig){
 }
 
 int main(){
-  char response[] = "Pawel Chojnacki, 70950\n";
-  char queries[10][2] = {{"70950"}, {"106023"}};
-
-  //signal(SIGCHLD, childend);
-  signal(SIGCHLD, SIG_IGN);
+  signal(SIGCHLD, childend);
+  //signal(SIGCHLD, SIG_IGN);
 
   int fd = socket(PF_INET, SOCK_STREAM, 0);
   const struct sockaddr_in sock_desc = {
@@ -58,7 +55,7 @@ int main(){
     	close(fd);
 	char buf[100];
         ssize_t n = read(client_fd, buf, sizeof(buf) );
-	printf("x: %d\n", n);
+	printf("x: %lu\n", (unsigned long)n);
 	while (n > 0) {
 	  write(1, buf, n);
 	  if (strncmp(buf, "106023", 6)==0) {
