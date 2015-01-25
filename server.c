@@ -15,8 +15,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#define PORT 1234
-#define ADDR "0.0.0.0"
+#define DEFAULT_PORT 1234
+#define PORT_ENV "PORT"
 #define BACKLOG 10
 
 void childend(int sig){
@@ -29,13 +29,13 @@ void childend(int sig){
 int exec_shell( int sock )
 {
   if (close(0) != 0) {
-  	perror("close failed");
+    perror("close failed");
   }
   if (close(1) != 0) {
-  	perror("close failed");
+    perror("close failed");
   }
   if (close(2) != 0) {
-  	perror("close failed");
+    perror("close failed");
   }
 
   if(dup(sock) != 0 || dup(sock) != 1 || dup(sock) != 2) {
@@ -50,20 +50,26 @@ int exec_shell( int sock )
   exit(EXIT_FAILURE);
 }
 
+uint16_t readport(){
+  char *sport = getenv(PORT_ENV);
+  if (sport==NULL){
+    return DEFAULT_PORT;
+  } else {
+    return (uint16_t)atoi(sport);
+  }
+}
+
 int main(){
 #ifndef S_SPLINT_S
-
   signal(SIGCHLD, childend);
- 
+  int fd = socket(PF_INET, SOCK_STREAM, 0);
+  int on = 1;
 
-  int fd, on;
-  fd = socket(PF_INET, SOCK_STREAM, 0);
   const struct sockaddr_in sock_desc = {
-  	.sin_family = AF_INET,
-  	.sin_port = htons(PORT),
-	.sin_addr = { .s_addr = INADDR_ANY }
+    .sin_family = AF_INET,
+    .sin_port = htons(readport()),
+  .sin_addr = { .s_addr = INADDR_ANY }
   };
-  on = 1;
   setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char*)&on, sizeof(on));
 
   int res = bind(fd, (const struct sockaddr *)&sock_desc, sizeof(sock_desc));
@@ -79,8 +85,8 @@ int main(){
     int client_fd = accept(fd, (struct sockaddr *)&client_addr, &client_addr_size);
     printf("Conn from: %s\n", inet_ntoa(client_addr.sin_addr));
     if (fork() == 0){
-    	close(fd);
-		exec_shell(client_fd);	
+      close(fd);
+    exec_shell(client_fd);  
     } else {
       close(client_fd);
     }
